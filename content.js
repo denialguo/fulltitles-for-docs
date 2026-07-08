@@ -1,7 +1,10 @@
+let titleFontSize = 14; // px; overridden by stored setting
+
 function enhanceTitles() {
   const titles = document.querySelectorAll('.docs-homescreen-grid-item-title');
 
   titles.forEach(title => {
+    title.style.fontSize = `${titleFontSize}px`;
     if (title.dataset.enhanced === 'true') return;
 
     // Allow up to 2 lines with ellipsis
@@ -99,3 +102,17 @@ observer.observe(document.body, { childList: true, subtree: true });
 
 // Initial run
 window.addEventListener('load', () => setTimeout(enhanceTitles, 1000));
+
+// Title font size — restore the stored value, and update live from the popup.
+chrome.storage.sync.get({ titleFontSize: 14 }, (stored) => {
+  titleFontSize = stored.titleFontSize;
+  enhanceTitles();
+});
+
+chrome.runtime.onMessage.addListener((message) => {
+  if (message.type === 'SET_TITLE_FONT_SIZE') {
+    titleFontSize = message.size;
+    document.querySelectorAll('.docs-homescreen-grid-item-title')
+      .forEach(title => title.style.fontSize = `${titleFontSize}px`);
+  }
+});
